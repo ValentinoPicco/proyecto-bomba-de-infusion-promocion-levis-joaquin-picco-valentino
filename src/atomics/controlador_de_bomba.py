@@ -121,11 +121,11 @@ class ControladorDeBomba(AtomicDEVS):
             
         elif fase == "fin_bolsa":
             # Si acabamos de emitir la alarma baja, programamos la detención en 60s
-            if salida and salida == self.out_alarmaBaja:
+            if salida and salida[0] == self.out_alarmaBaja:
                 salida = (self.out_detenerBomba, "emitir")
                 sigma = 60.0
             # Si ya pasaron los 60s y mandamos detener, entramos en recambio
-            elif salida and salida == self.out_detenerBomba:
+            elif salida and salida[0] == self.out_detenerBomba:
                 fase = "reemplazando_bolsa"
                 caudalObj = 0
                 tiempDesvio = 0
