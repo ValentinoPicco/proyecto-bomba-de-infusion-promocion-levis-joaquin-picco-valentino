@@ -38,7 +38,7 @@ class ModeloAcopladoA1(CoupledDEVS):
         self.connectPorts(self.in_confEnf, self.controlador.in_confEnf)
         
         # Acoplamientos Internos (IC)
-        # Comunicación interna directa entre los bloques
+        # Comunicación interna directa entre los modulos
         self.connectPorts(self.generador.out_ordenMedica, self.controlador.in_ordenMedica)
         self.connectPorts(self.sensor.out_sensorFlujo, self.controlador.in_sensorFlujo)
         
