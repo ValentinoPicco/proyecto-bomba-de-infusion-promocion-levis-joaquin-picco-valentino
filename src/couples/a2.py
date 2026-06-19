@@ -6,13 +6,19 @@ from atomics.logger import Logger
 
 class ModeloAcopladoA2(CoupledDEVS):
     def __init__(self, nombre="Modelo_A2", escenario_ordenes=[]):
+        """
+        Inicializa el Modelo Acoplado A1.
+        :param nombre: Nombre del modelo.
+        :param escenario_ordenes: La lista de órdenes que se pasará al Generador.
+        """
+        # Iniciamos la clase base
         CoupledDEVS.__init__(self, nombre)
         
-        # Puertos de Entrada Globales
+        # Puertos de Entrada Globales de A2(X)
         self.in_finBolsa = self.addInPort("in_finBolsa")
         self.in_confEnf = self.addInPort("in_confirmacionEnfermero")
         
-        # Puerto de Salida Global
+        # Puerto de Salida Global de A2 (Y)
         self.out_notificacionAlarma = self.addOutPort("out_notificacionAlarma")
         
         # Instanciamos los Submodelos
