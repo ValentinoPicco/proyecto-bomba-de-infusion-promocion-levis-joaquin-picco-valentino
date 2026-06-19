@@ -1,4 +1,4 @@
-from pypdevs.minimal import CoupledDEVS
+from pypdevs.DEVS import CoupledDEVS
 from atomics.generador_ordenes_medicas import GeneradorDeOrdenesMedicas
 from atomics.sensor_de_flujo import SensorDeFlujo
 from atomics.controlador_de_bomba import ControladorDeBomba

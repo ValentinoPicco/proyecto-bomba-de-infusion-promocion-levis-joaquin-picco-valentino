@@ -1,4 +1,4 @@
-from pypdevs.minimal import AtomicDEVS
+from pypdevs.DEVS import AtomicDEVS
 
 class ModuloDeAlarmas(AtomicDEVS):
     def __init__(self, nombre="ModuloAlarmas"):
@@ -59,7 +59,7 @@ class ModuloDeAlarmas(AtomicDEVS):
     def outputFnc(self):
         # Esta función solo se gatilla cuando sigma llega a 0.
         # Emite directamente el tipo de alarma que está en el estado .
-        return {self.out_notificacionAlarma: [self.state["tipo"]]}
+        return {self.out_notificacionAlarma: self.state["tipo"]}
 
     def intTransition(self):
         # Reacciones en cadena luego de emitir la alarma 

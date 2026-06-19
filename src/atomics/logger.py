@@ -1,4 +1,4 @@
-from pypdevs.minimal import AtomicDEVS
+from pypdevs.DEVS import AtomicDEVS
 
 class Logger(AtomicDEVS):
     def __init__(self, nombre="Logger"):

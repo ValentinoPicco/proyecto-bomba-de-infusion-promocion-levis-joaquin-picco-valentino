@@ -1,4 +1,4 @@
-from pypdevs.minimal import AtomicDEVS
+from pypdevs.DEVS import AtomicDEVS
 
 class ControladorDeBomba(AtomicDEVS):
     def __init__(self, nombre="Controlador"):
@@ -35,7 +35,7 @@ class ControladorDeBomba(AtomicDEVS):
         salida_actual = self.state["salida"]
         if salida_actual is not None:
             puerto, valor = salida_actual
-            return {puerto: [valor]}
+            return {puerto: valor}
         return {}
 
     def extTransition(self, inputs):

@@ -1,5 +1,5 @@
-from pypdevs.minimal import CoupledDEVS
-from a1 import ModeloAcopladoA1
+from pypdevs.DEVS import CoupledDEVS
+from couples.a1 import ModeloAcopladoA1
 from atomics.actuador_de_bomba import ActuadorDeLaBomba
 from atomics.modulo_de_alarmas import ModuloDeAlarmas
 from atomics.logger import Logger
