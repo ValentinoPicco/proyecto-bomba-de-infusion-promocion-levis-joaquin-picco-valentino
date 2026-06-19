@@ -1,3 +1,5 @@
+# necesita correcciones, ignorar por el momento y solo ver los test
+
 from pypdevs.simulator import Simulator
 from couples.a2 import ModeloAcopladoA2
 
