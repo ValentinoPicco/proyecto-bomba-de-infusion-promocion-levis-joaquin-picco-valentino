@@ -44,7 +44,7 @@ class GeneradorDeOrdenesMedicas(AtomicDEVS):
         Las salidas se devuelven en forma de lista.
         """
         caudal_a_emitir = self.state["caudal"]
-        return {self.out_ordenMedica: caudal_a_emitir}
+        return {self.out_ordenMedica: [caudal_a_emitir]}
 
     def intTransition(self):
         """

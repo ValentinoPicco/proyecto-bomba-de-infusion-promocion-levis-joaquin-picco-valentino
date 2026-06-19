@@ -51,7 +51,7 @@ class SensorDeFlujo(AtomicDEVS):
         Se ejecuta cuando sigma llega a 0. Envía el último caudal medido al Controlador.
         """
         caudal_leido = self.state["caudal"]
-        return {self.out_sensorFlujo: caudal_leido}
+        return {self.out_sensorFlujo: [caudal_leido]}
 
     def intTransition(self):
         """

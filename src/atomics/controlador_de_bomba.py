@@ -35,7 +35,7 @@ class ControladorDeBomba(AtomicDEVS):
         salida_actual = self.state["salida"]
         if salida_actual is not None:
             puerto, valor = salida_actual
-            return {puerto: valor}
+            return {puerto: [valor]}
         return {}
 
     def extTransition(self, inputs):
