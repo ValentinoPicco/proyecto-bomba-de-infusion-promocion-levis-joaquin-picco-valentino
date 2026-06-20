@@ -37,7 +37,25 @@ class ControladorDeBomba(AtomicDEVS):
         salida_actual = self.state["salida"]
         if salida_actual is not None:
             puerto, valor = salida_actual
-            return {puerto: [valor]}
+            
+            # Formatear el mensaje para el logger en español
+            if puerto == self.out_ajustarCaudal:
+                msg_log = f"Ajustar caudal a {valor} ml/h"
+            elif puerto == self.out_detenerBomba:
+                msg_log = "Orden de detener bomba"
+            elif puerto == self.out_alarmaBaja:
+                msg_log = "Alarma Baja emitida (Fin de bolsa)"
+            elif puerto == self.out_alarmaMedia:
+                msg_log = "Alarma Media emitida (Desvío detectado)"
+            elif puerto == self.out_alarmaCritica:
+                msg_log = "Alarma Crítica emitida (Desvío sostenido)"
+            else:
+                msg_log = f"Evento: {valor}"
+                
+            return {
+                puerto: [valor],
+                self.out_notificarEvento: [msg_log]
+            }
         return {}
 
     def extTransition(self, inputs):
@@ -55,6 +73,7 @@ class ControladorDeBomba(AtomicDEVS):
         # Evaluamos qué eventos llegaron
         if self.in_ordenMedica in inputs:
             x = inputs[self.in_ordenMedica]
+            x = x[0] if isinstance(x, list) else x
             if x > 0 and fase != "reemplazando_bolsa":
                 fase = "ajustando"
                 caudalObj = x
@@ -69,6 +88,7 @@ class ControladorDeBomba(AtomicDEVS):
 
         elif self.in_sensorFlujo in inputs:
             x = inputs[self.in_sensorFlujo]
+            x = x[0] if isinstance(x, list) else x
             if caudalObj > 0:
                 margen_error = self.parametros.MARGEN_ERROR_CAUDAL * caudalObj
                 desvio = abs(x - caudalObj)

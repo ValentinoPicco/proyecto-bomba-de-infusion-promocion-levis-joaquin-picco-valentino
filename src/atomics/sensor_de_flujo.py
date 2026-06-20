@@ -40,9 +40,8 @@ class SensorDeFlujo(AtomicDEVS):
         
         # 2. Verificamos si llegó un evento por nuestro puerto específico
         if self.in_caudalActual in inputs:
-            # Los eventos llegan en una lista
-            # Tomamos el primer evento de la lista (en este caso, solo esperamos uno por ciclo)
             nuevo_caudal = inputs[self.in_caudalActual]
+            nuevo_caudal = nuevo_caudal[0] if isinstance(nuevo_caudal, list) else nuevo_caudal
             
             # Validación del dominio de datos utilizando CAUDAL_MAXIMO
             if 0 <= nuevo_caudal <= self.parametros.CAUDAL_MAXIMO:
