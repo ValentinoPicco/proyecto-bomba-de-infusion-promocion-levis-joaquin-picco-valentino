@@ -48,7 +48,8 @@ class ActuadorDeLaBomba(AtomicDEVS):
         # Caso 1: Llega una orden de ajustar caudal desde fase estable
         if self.in_ajustarCaudal in inputs:
             fase = "transicion"
-            caudalObjetivo = inputs[self.in_ajustarCaudal]
+            val = inputs[self.in_ajustarCaudal]
+            caudalObjetivo = val[0] if isinstance(val, list) else val
             sigma = self.parametros.LATENCIA_ACTUADOR
         elif self.in_detenerBomba in inputs:
             fase = "transicion"

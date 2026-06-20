@@ -28,7 +28,8 @@ class Logger(AtomicDEVS):
         
         if self.in_evento in inputs:
             # Capturamos el evento entrante y lo agregamos al final de la lista 
-            evento = inputs[self.in_evento]
+            val = inputs[self.in_evento]
+            evento = val[0] if isinstance(val, list) else val
             historial.append(evento)
             
         # Actualizamos el estado manteniendo el sigma en infinito 
