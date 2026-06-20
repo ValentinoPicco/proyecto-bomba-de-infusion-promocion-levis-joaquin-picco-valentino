@@ -1,8 +1,10 @@
 from pypdevs.DEVS import AtomicDEVS
+from parametros import ParametrosSistema
 
 class ControladorDeBomba(AtomicDEVS):
-    def __init__(self, nombre="Controlador"):
+    def __init__(self, nombre="Controlador", parametros=None):
         AtomicDEVS.__init__(self, nombre)
+        self.parametros = parametros if parametros else ParametrosSistema()
         
         # Definimos los Puertos de Entrada (X)
         self.in_ordenMedica = self.addInPort("in_ordenMedica")
@@ -57,7 +59,7 @@ class ControladorDeBomba(AtomicDEVS):
                 fase = "ajustando"
                 caudalObj = x
                 salida = (self.out_ajustarCaudal, x)
-                sigma = 3.0
+                sigma = self.parametros.TIEMPO_INICIO_INFUSION
             elif x == 0:
                 fase = "suspendido"
                 caudalObj = 0
@@ -68,24 +70,24 @@ class ControladorDeBomba(AtomicDEVS):
         elif self.in_sensorFlujo in inputs:
             x = inputs[self.in_sensorFlujo]
             if caudalObj > 0:
-                margen_error = 0.1 * caudalObj
+                margen_error = self.parametros.MARGEN_ERROR_CAUDAL * caudalObj
                 desvio = abs(x - caudalObj)
                 
                 if desvio <= margen_error:
                     tiempDesvio = 0
                 else:
                     # Lógica de escalado temporal para las alarmas
-                    if tiempDesvio < 5:
+                    if tiempDesvio < self.parametros.TIEMPO_DESVIO_MEDIA:
                         tiempDesvio += 1
-                    elif tiempDesvio == 5:
-                        tiempDesvio = 6
+                    elif tiempDesvio == self.parametros.TIEMPO_DESVIO_MEDIA:
+                        tiempDesvio += 1
                         salida = (self.out_alarmaMedia, "emitir")
                         sigma = 0.0
-                    elif 6 <= tiempDesvio < 9:
+                    elif self.parametros.TIEMPO_DESVIO_MEDIA < tiempDesvio < self.parametros.TIEMPO_DESVIO_CRITICA:
                         tiempDesvio += 1
-                    elif tiempDesvio == 9:
+                    elif tiempDesvio == self.parametros.TIEMPO_DESVIO_CRITICA:
                         fase = "bloqueando"
-                        tiempDesvio = 10
+                        tiempDesvio += 1
                         salida = (self.out_alarmaCritica, "emitir")
                         sigma = 0.0
 
@@ -120,17 +122,17 @@ class ControladorDeBomba(AtomicDEVS):
             sigma = float('inf')
             
         elif fase == "fin_bolsa":
-            # Si acabamos de emitir la alarma baja, programamos la detención en 60s
+            # Si acabamos de emitir la alarma baja, programamos la detención
             if salida and salida[0] == self.out_alarmaBaja:
                 salida = (self.out_detenerBomba, "emitir")
-                sigma = 60.0
-            # Si ya pasaron los 60s y mandamos detener, entramos en recambio
+                sigma = self.parametros.TIEMPO_MAX_FIN_BOLSA
+            # Si ya pasaron los segundos maximos y mandamos detener, entramos en recambio
             elif salida and salida[0] == self.out_detenerBomba:
                 fase = "reemplazando_bolsa"
                 caudalObj = 0
                 tiempDesvio = 0
                 salida = None
-                sigma = 120.0
+                sigma = self.parametros.TIEMPO_REEMPLAZO_BOLSA
                 
         elif fase == "reemplazando_bolsa":
             fase = "suspendido"

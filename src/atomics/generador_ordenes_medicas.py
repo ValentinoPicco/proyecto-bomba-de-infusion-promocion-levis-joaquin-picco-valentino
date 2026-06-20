@@ -1,7 +1,8 @@
 from pypdevs.DEVS import AtomicDEVS
+from parametros import ParametrosSistema
 
 class GeneradorDeOrdenesMedicas(AtomicDEVS):
-    def __init__(self, nombre, escenario_ordenes):
+    def __init__(self, nombre, escenario_ordenes, parametros=None):
         """
         Inicializa el modelo atómico.
         :param nombre: Nombre del modelo.
@@ -10,14 +11,15 @@ class GeneradorDeOrdenesMedicas(AtomicDEVS):
         """
         # Inicializamos la clase base
         AtomicDEVS.__init__(self, nombre)
+        self.parametros = parametros if parametros else ParametrosSistema()
         
         # Definimos el conjunto de salidas (Y) creando el puerto
         self.out_ordenMedica = self.addOutPort("ordenMedica")
         
-        # Revisamos que el dominio de los caudales sea correcto (0 a 200 ml/h)
+        # Revisamos que el dominio de los caudales sea correcto
         for caudal, tiempo in escenario_ordenes:
-            if not (0 <= caudal <= 200):
-                raise ValueError(f"Error de dominio: El caudal {caudal} ml/h está fuera del rango permitido [2].")
+            if not (0 <= caudal <= self.parametros.CAUDAL_MAXIMO):
+                raise ValueError(f"Error de dominio: El caudal {caudal} ml/h está fuera del rango permitido [0, {self.parametros.CAUDAL_MAXIMO}].")
         
         # Definimos el Conjunto de Estados (S)
         self.escenario = escenario_ordenes

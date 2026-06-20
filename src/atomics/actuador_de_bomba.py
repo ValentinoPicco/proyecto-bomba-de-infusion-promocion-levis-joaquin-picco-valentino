@@ -1,11 +1,13 @@
 from pypdevs.DEVS import AtomicDEVS
+from parametros import ParametrosSistema
 
 class ActuadorDeLaBomba(AtomicDEVS):
-    def __init__(self, nombre="ActuadorBomba"):
+    def __init__(self, nombre="ActuadorBomba", parametros=None):
         """
         Inicializa el modelo atómico del Actuador de la Bomba.
         """
         AtomicDEVS.__init__(self, nombre)
+        self.parametros = parametros if parametros else ParametrosSistema()
         
         # Definimos los Puertos de Entrada (X)
         self.in_ajustarCaudal = self.addInPort("in_ajustarCaudal")
@@ -45,17 +47,13 @@ class ActuadorDeLaBomba(AtomicDEVS):
 
         # Caso 1: Llega una orden de ajustar caudal desde fase estable
         if self.in_ajustarCaudal in inputs:
-            x = inputs[self.in_ajustarCaudal]
-            if fase == "estable":
-                fase = "transicion"
-                caudalObjetivo = x
-                sigma = 0.5 # Latencia mecánica de 0.5s
-
-        # Caso 2: Llega una orden de detención inmediata de la bomba
+            fase = "transicion"
+            caudalObjetivo = inputs[self.in_ajustarCaudal]
+            sigma = self.parametros.LATENCIA_ACTUADOR
         elif self.in_detenerBomba in inputs:
             fase = "transicion"
             caudalObjetivo = 0.0
-            sigma = 0.5 # Latencia mecánica de 0.5s
+            sigma = self.parametros.LATENCIA_ACTUADOR
 
         self.state.update({
             "fase": fase,

@@ -1,8 +1,10 @@
 from pypdevs.DEVS import AtomicDEVS
+from parametros import ParametrosSistema
 
 class ModuloDeAlarmas(AtomicDEVS):
-    def __init__(self, nombre="ModuloAlarmas"):
+    def __init__(self, nombre="ModuloAlarmas", parametros=None):
         AtomicDEVS.__init__(self, nombre)
+        self.parametros = parametros if parametros else ParametrosSistema()
         
         # Puertos de Entrada (X) [cite: 380-385]
         self.in_alarmaBaja = self.addInPort("in_alarmaBaja")
@@ -67,10 +69,10 @@ class ModuloDeAlarmas(AtomicDEVS):
         fase = self.state["fase"]
         sigma = self.state["sigma"]
 
-        # Si era alarma crítica, entra en el bucle de espera de 30 segundos 
+        # Si era alarma crítica, entra en el bucle de espera 
         if fase == "emitir" and tipo == "critica":
             fase = "esperar30"
-            sigma = 30.0
+            sigma = self.parametros.TIEMPO_ESPERA_ALARMA_CRITICA
             
         # Si NO era crítica, simplemente se apaga (ya cumplió con avisar) 
         elif fase == "emitir" and tipo != "critica":
@@ -78,11 +80,11 @@ class ModuloDeAlarmas(AtomicDEVS):
             fase = "pasivo"
             sigma = float('inf')
             
-        # Si pasaron los 30s de espera (o un ciclo de 10s previo), 
-        # vuelve a cargar 10 segundos para seguir molestando 
+        # Si pasaron los segundos de espera (o un ciclo previo), 
+        # vuelve a cargar el tiempo de repeticion para seguir molestando 
         elif fase == "esperar30" or fase == "esperar10":
             fase = "esperar10"
-            sigma = 10.0
+            sigma = self.parametros.TIEMPO_REPETICION_ALARMA_CRITICA
 
         self.state.update({"tipo": tipo, "fase": fase, "sigma": sigma})
         return self.state

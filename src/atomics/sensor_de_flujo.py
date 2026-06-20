@@ -1,21 +1,28 @@
 from pypdevs.DEVS import AtomicDEVS
+from parametros import ParametrosSistema
 
 class SensorDeFlujo(AtomicDEVS):
-    def __init__(self, nombre="SensorDeFlujo"):
+    def __init__(self, nombre="SensorDeFlujo", parametros=None):
         """
         Inicializa el modelo atómico del Sensor de Flujo.
         :param nombre: Nombre del modelo.
+        :param parametros: Instancia de configuración del sistema.
         """
         # Inicializamos la clase base
         AtomicDEVS.__init__(self, nombre)
+        self.parametros = parametros if parametros else ParametrosSistema()
         
         # Definimos los puertos de Entrada (X) y Salida (Y)
         self.in_caudalActual = self.addInPort("caudalActual")
         self.out_sensorFlujo = self.addOutPort("sensorFlujo")
         
         # Definimos el Conjunto de Estados (S)
-        # Inicialmente el caudal leído es 0 y falta 1 segundo para el primer reporte
-        self.state = {"caudal": 0.0, "sigma": 1.0}
+        # El sensor arranca en reposo (caudal 0) y su temporizador comienza a correr
+        # con el período de muestreo definido.
+        self.state = {
+            "caudal": 0.0, 
+            "sigma": self.parametros.PERIODO_MUESTREO_SENSOR
+        }
 
     def timeAdvance(self):
         """
@@ -37,8 +44,8 @@ class SensorDeFlujo(AtomicDEVS):
             # Tomamos el primer evento de la lista (en este caso, solo esperamos uno por ciclo)
             nuevo_caudal = inputs[self.in_caudalActual]
             
-            # Validación del dominio de datos
-            if 0 <= nuevo_caudal <= 200:
+            # Validación del dominio de datos utilizando CAUDAL_MAXIMO
+            if 0 <= nuevo_caudal <= self.parametros.CAUDAL_MAXIMO:
                 self.state["caudal"] = nuevo_caudal
             else:
                 raise ValueError(f"Lectura anómala del sensor: {nuevo_caudal} ml/h no es un valor físico posible.")
@@ -58,7 +65,7 @@ class SensorDeFlujo(AtomicDEVS):
         Transición Interna (δint).
         Se ejecuta inmediatamente después de enviar la lectura.
         """
-        # Reiniciamos el temporizador para emitir la siguiente lectura en exactamente 1 segundo
-        self.state["sigma"] = 1.0
+        # Reiniciamos el temporizador usando el PERIODO_MUESTREO_SENSOR
+        self.state["sigma"] = self.parametros.PERIODO_MUESTREO_SENSOR
         
         return self.state

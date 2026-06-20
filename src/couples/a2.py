@@ -3,16 +3,19 @@ from couples.a1 import ModeloAcopladoA1
 from atomics.actuador_de_bomba import ActuadorDeLaBomba
 from atomics.modulo_de_alarmas import ModuloDeAlarmas
 from atomics.logger import Logger
+from parametros import ParametrosSistema
 
 class ModeloAcopladoA2(CoupledDEVS):
-    def __init__(self, nombre="Modelo_A2", escenario_ordenes=[]):
+    def __init__(self, nombre="Modelo_A2", escenario_ordenes=[], parametros=None):
         """
         Inicializa el Modelo Acoplado A1.
         :param nombre: Nombre del modelo.
         :param escenario_ordenes: La lista de órdenes que se pasará al Generador.
+        :param parametros: Instancia de ParametrosSistema.
         """
         # Iniciamos la clase base
         CoupledDEVS.__init__(self, nombre)
+        self.parametros = parametros if parametros else ParametrosSistema()
         
         # Puertos de Entrada Globales de A2(X)
         self.in_finBolsa = self.addInPort("in_finBolsa")
@@ -22,9 +25,9 @@ class ModeloAcopladoA2(CoupledDEVS):
         self.out_notificacionAlarma = self.addOutPort("out_notificacionAlarma")
         
         # Instanciamos los Submodelos
-        self.a1 = self.addSubModel(ModeloAcopladoA1("A1", escenario_ordenes))
-        self.actuador = self.addSubModel(ActuadorDeLaBomba("Actuador"))
-        self.alarmas = self.addSubModel(ModuloDeAlarmas("Alarmas"))
+        self.a1 = self.addSubModel(ModeloAcopladoA1("A1", escenario_ordenes, self.parametros))
+        self.actuador = self.addSubModel(ActuadorDeLaBomba("Actuador", self.parametros))
+        self.alarmas = self.addSubModel(ModuloDeAlarmas("Alarmas", self.parametros))
         self.logger = self.addSubModel(Logger("Logger"))
         
         # --- Acoplamientos de Entrada (EIC) ---
