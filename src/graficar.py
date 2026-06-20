@@ -1,11 +1,11 @@
-import ast
+import re
 import matplotlib.pyplot as plt
 
 def graficar_desde_traza(archivo_txt):
     tiempo_actual = 0.0
     modelo_actual = ""
 
-    # Listas para guardar las coordenadas X (tiempo) e Y (valores)
+    # Listas inicializadas en el tiempo 0
     t_obj, y_obj = [0.0], [0.0]
     t_fase, y_fase = [0.0], ["suspendido"]
     t_real, y_real = [0.0], [0.0]
@@ -15,42 +15,47 @@ def graficar_desde_traza(archivo_txt):
     try:
         with open(archivo_txt, "r", encoding="utf-8") as f:
             for linea in f:
-                # 1. Capturar el reloj de la simulación
-                if "Current Time:" in linea:
-                    # Ej: "__  Current Time: 10.00 ________________"
-                    partes = linea.split("Current Time:")
-                    tiempo_str = partes[1].split()[0]
+                # 1. Capturar el reloj de la simulación (Busca "TIEMPO ACTUAL:")
+                if "TIEMPO ACTUAL:" in linea:
+                    partes = linea.split("TIEMPO ACTUAL:")
+                    tiempo_str = partes[1].strip().split()[0]
                     if tiempo_str != "inf":
                         tiempo_actual = float(tiempo_str)
 
-                # 2. Identificar qué modelo está actuando en este instante
-                elif "in model" in linea:
-                    modelo_actual = linea.strip()
+                # 2. Identificar qué modelo está actuando (Busca el nombre entre < >)
+                elif "en el modelo <" in linea:
+                    modelo_actual = linea.split("<")[1].split(">")[0]
 
-                # 3. Leer el diccionario del estado nuevo
-                elif "New State:" in linea:
-                    # Extraemos todo lo que está a la derecha de "New State:"
-                    estado_str = linea.split("New State:")[1].strip()
-                    try:
-                        # ast.literal_eval convierte el texto "{'fase': 'ajustando'...}" en un diccionario real de Python
-                        estado = ast.literal_eval(estado_str)
+                # 3. Leer el estado (Busca "Estado Inicial" o "Nuevo Estado")
+                elif "Estado Inicial:" in linea or "Nuevo Estado:" in linea:
+                    
+                    # --- Si es el Controlador, pescamos la fase y el caudal objetivo ---
+                    if "Controlador" in modelo_actual:
+                        match_fase = re.search(r"'fase':\s*'([^']+)'", linea)
+                        match_obj = re.search(r"'caudalObj':\s*([\d\.]+)", linea)
                         
-                        # Si el estado que leímos pertenece al Controlador
-                        if "Controlador" in modelo_actual and "fase" in estado:
+                        if match_fase and match_obj:
                             t_obj.append(tiempo_actual)
-                            y_obj.append(estado["caudalObj"])
+                            y_obj.append(float(match_obj.group(1)))
                             
                             t_fase.append(tiempo_actual)
-                            y_fase.append(estado["fase"])
+                            y_fase.append(match_fase.group(1))
 
-                        # Si el estado que leímos pertenece al Sensor de Flujo
-                        elif "Sensor" in modelo_actual and "caudal" in estado:
+                    # --- Si es el Sensor, pescamos el caudal real ---
+                    elif "Sensor" in modelo_actual:
+                        match_caudal = re.search(r"'caudal':\s*([\d\.]+)", linea)
+                        
+                        if match_caudal:
                             t_real.append(tiempo_actual)
-                            y_real.append(estado["caudal"])
-                    except:
-                        pass # Ignorar si no se puede interpretar la línea
+                            y_real.append(float(match_caudal.group(1)))
+
     except FileNotFoundError:
-        print(f"Error: No se encontró el archivo '{archivo_txt}'. Asegurate de correr el main.py primero.")
+        print(f"Error: No se encontró el archivo '{archivo_txt}'.")
+        return
+
+    # Comprobación de seguridad si el txt estaba vacío o no se leyó nada
+    if len(t_obj) <= 1 and len(t_real) <= 1:
+        print("No se encontraron datos útiles en el txt. Revisá el formato.")
         return
 
     # --- Creación de los gráficos ---
@@ -75,5 +80,5 @@ def graficar_desde_traza(archivo_txt):
     plt.show()
 
 if __name__ == "__main__":
-    # Apuntamos al archivo de texto que genera tu main.py
+    # Poné acá el nombre exacto de tu archivo txt generado
     graficar_desde_traza("traza_escenario_1.txt")
