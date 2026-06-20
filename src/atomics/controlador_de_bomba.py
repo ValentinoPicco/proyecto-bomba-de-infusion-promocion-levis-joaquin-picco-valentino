@@ -45,7 +45,7 @@ class ControladorDeBomba(AtomicDEVS):
         if self.state["sigma"] != float('inf'):
             self.state["sigma"] -= self.elapsed
 
-        # Extraemos variables para que el código sea limpio y se parezca a tu tupla matemática
+        # Extraemos variables para que el código sea limpio
         fase = self.state["fase"]
         caudalObj = self.state["caudalObj"]
         tiempDesvio = self.state["tiempDesvio"]
