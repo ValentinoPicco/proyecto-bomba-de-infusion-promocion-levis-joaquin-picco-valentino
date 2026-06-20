@@ -135,29 +135,81 @@ def menu_cronograma(cronograma_eventos):
         elif op == "5":
             break
 
-def main():
-    parametros = ParametrosSistema()
-    escenario_ordenes = [(50, 0), (80, 100), (0, 100)]
-    cronograma_eventos = []
-    tiempo_max = 250.0
-    
+def menu_escenarios_existentes(parametros):
+    while True:
+        limpiar_pantalla()
+        print("--- ESCENARIOS PREDEFINIDOS ---")
+        print("1. Funcionamiento normal, sin fallas.")
+        print("2. Cambio de orden médica durante la infusión.")
+        print("3. Orden médica con caudal igual a cero (detención).")
+        print("4. Desvío leve de caudal que es corregido (-5% ruido).")
+        print("5. Desvío de caudal mayor al 10% (-15% ruido sostenido).")
+        print("6. Fin de bolsa con confirmación del enfermero.")
+        print("7. Alarma crítica no confirmada durante 30s (-15% ruido).")
+        print("8. Volver al menú principal")
+        
+        op = input("\nSeleccione el escenario a ejecutar (1-8): ")
+        
+        # Reseteamos parámetros por defecto para escenarios limpios
+        parametros.RUIDO_ACTUADOR = 0.0
+        cronograma = []
+        escenario = []
+        tiempo_max = 250.0
+        
+        if op == "1":
+            escenario = [(50, 200)]
+            print("\n[Resumen] Escenario 1: Inicia orden de 50 ml/h constante. No hay ruido ni fallas.")
+        elif op == "2":
+            escenario = [(50, 100), (80, 100)]
+            print("\n[Resumen] Escenario 2: Inicia en 50 ml/h, y a los 100s cambia a 80 ml/h.")
+        elif op == "3":
+            escenario = [(50, 100), (0, 100)]
+            print("\n[Resumen] Escenario 3: Inicia en 50 ml/h, y a los 100s la orden cae a 0 (suspensión).")
+        elif op == "4":
+            escenario = [(100, 200)]
+            parametros.RUIDO_ACTUADOR = -0.05
+            print("\n[Resumen] Escenario 4: Inyectaremos un error físico del 5% en la bomba. Al ser leve (<10%), no saltarán alarmas.")
+        elif op == "5":
+            escenario = [(100, 200)]
+            parametros.RUIDO_ACTUADOR = -0.15
+            print("\n[Resumen] Escenario 5: Error físico grave del 15% en la bomba. Saltará Alarma Media a los 5s, y luego Crítica.")
+        elif op == "6":
+            escenario = [(50, 200)]
+            cronograma = [("fin_bolsa", 50), ("conf_enf", 30)]
+            print("\n[Resumen] Escenario 6: A los 50s se acaba la bolsa (Alarma Baja). 30s después el enfermero confirma.")
+        elif op == "7":
+            escenario = [(100, 200)]
+            parametros.RUIDO_ACTUADOR = -0.15
+            tiempo_max = 100.0 # Más corto para ver el bucle rápido
+            # Sin cronograma de confirmación, la alarma crítica iterará por siempre
+            print("\n[Resumen] Escenario 7: Error físico del 15%. La alarma crítica sonará, esperará 30s, y luego repetirá cada 10s porque nadie confirma.")
+        elif op == "8":
+            break
+        else:
+            continue
+            
+        input("Presione ENTER para arrancar el simulador...")
+        ejecutar_simulacion(parametros, escenario, cronograma, tiempo_max)
+
+def menu_personalizado(parametros, escenario_ordenes, cronograma_eventos, tiempo_max):
     while True:
         limpiar_pantalla()
         print("==================================================")
-        print("      SIMULADOR DE BOMBA DE INFUSIÓN (DEVS)")
+        print("           ESCENARIO PERSONALIZADO")
         print("==================================================")
         print("\nESTADO DE LA CONFIGURACIÓN:")
         print(f"  - Órdenes médicas en escenario: {len(escenario_ordenes)}")
         print(f"  - Eventos externos programados: {len(cronograma_eventos)}")
+        print(f"  - Ruido físico del actuador:    {parametros.RUIDO_ACTUADOR*100:.1f}%")
         print(f"  - Tiempo máximo de simulación:  {tiempo_max}s")
         
-        print("\nMENÚ PRINCIPAL:")
+        print("\nOPCIONES:")
         print("  1. ► Correr Simulación")
-        print("  2. ⚙ Configurar Parámetros del Sistema")
+        print("  2. ⚙ Configurar Parámetros del Sistema (y Ruido)")
         print("  3. 💉 Configurar Escenario de Órdenes Médicas")
         print("  4. ⏰ Configurar Cronograma de Eventos Externos")
         print("  5. ⏳ Cambiar Tiempo Máximo de Simulación")
-        print("  6. ✖ Salir")
+        print("  6. ◄ Volver al Menú Principal")
         
         op = input("\nSeleccione una opción (1-6): ")
         
@@ -175,6 +227,31 @@ def main():
             except ValueError:
                 print("Valor inválido.")
         elif op == "6":
+            break
+
+def main():
+    parametros = ParametrosSistema()
+    escenario_ordenes = [(50, 0), (80, 100), (0, 100)]
+    cronograma_eventos = []
+    tiempo_max = 250.0
+    
+    while True:
+        # limpiar_pantalla()
+        print("==================================================")
+        print("        SIMULADOR DE BOMBA DE INFUSIÓN")
+        print("==================================================")
+        print("\nMENÚ:")
+        print("  1. Ejecutar escenario existente")
+        print("  2. Ejecutar escenario personalizado")
+        print("  3. Salir")
+        
+        op = input("\nSeleccione una opción (1-3): ")
+        
+        if op == "1":
+            menu_escenarios_existentes(parametros)
+        elif op == "2":
+            menu_personalizado(parametros, escenario_ordenes, cronograma_eventos, tiempo_max)
+        elif op == "3":
             limpiar_pantalla()
             print("Saliendo del simulador...")
             sys.exit(0)

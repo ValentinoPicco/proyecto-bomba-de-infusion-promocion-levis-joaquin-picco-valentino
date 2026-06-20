@@ -76,4 +76,4 @@ def graficar_desde_traza(archivo_txt):
 
 if __name__ == "__main__":
     # Apuntamos al archivo de texto que genera tu main.py
-    graficar_desde_traza("traza_escenario_1.txt")
+    graficar_desde_traza("logs_simulacion.txt")

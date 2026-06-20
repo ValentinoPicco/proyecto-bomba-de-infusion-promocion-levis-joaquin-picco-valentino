@@ -66,12 +66,14 @@ class ActuadorDeLaBomba(AtomicDEVS):
 
     def outputFnc(self):
         """
-        Función de Salida (λ).
-        Envía el nuevo caudal alcanzado a través del puerto una vez vencida la latencia.
+        Transición de Salida (λ).
+        Se ejecuta justo antes de la Transición Interna.
         """
-        # Solo emite eventos si finalizó la fase de transición
-        if self.state["fase"] == "transicion":
-            return {self.out_caudalActual: [self.state["caudalObjetivo"]]}
+        fase = self.state["fase"]
+        if fase == "transicion":
+            # Emitimos el caudal objetivo afectado por el posible ruido de fallo físico
+            caudal_real = self.state["caudalObjetivo"] * (1.0 + self.parametros.RUIDO_ACTUADOR)
+            return {self.out_caudalActual: [caudal_real]}
         return {}
 
     def intTransition(self):

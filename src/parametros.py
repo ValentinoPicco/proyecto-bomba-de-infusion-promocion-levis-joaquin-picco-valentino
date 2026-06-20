@@ -12,6 +12,10 @@ class ParametrosSistema:
         self.TIEMPO_DESVIO_MEDIA = 5                 # ticks/segundos
         self.TIEMPO_DESVIO_CRITICA = 9               # ticks/segundos
         self.TIEMPO_MAX_FIN_BOLSA = 60.0             # segundos
+        
+        # Parámetro inyectable para simulacion de fallos físicos
+        self.RUIDO_ACTUADOR = 0.0 # Porcentaje de ruido o error físico del actuador (-0.15 = 15% menos de caudal inyectado)
+        
         self.TIEMPO_REEMPLAZO_BOLSA = 120.0          # segundos
         self.TIEMPO_ESPERA_ALARMA_CRITICA = 30.0     # segundos
         self.TIEMPO_REPETICION_ALARMA_CRITICA = 10.0 # segundos
