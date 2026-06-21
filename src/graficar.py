@@ -137,10 +137,10 @@ def calcular_metricas_y_graficar(archivo_log, archivo_eventos):
 
 
     # ---------------------------------------------------------
-    # IMPRIMIR REPORTE DE MÉTRICAS (CONSIGNA PDF)
+    # IMPRIMIR REPORTE DE MÉTRICAS
     # ---------------------------------------------------------
     print("\n" + "="*60)
-    print("      RESULTADOS ESPERADOS (SEGÚN CONSIGNA PDF)")
+    print("      RESULTADOS ESPERADOS")
     print("="*60)
     
     # 1 y 2. Gráficos (se abren al final)
@@ -175,7 +175,7 @@ def calcular_metricas_y_graficar(archivo_log, archivo_eventos):
     print(f"\n7. Porcentaje de tiempo con infusión correcta: {porcentaje_correcto:.1f}%")
     
     print("="*60)
-    print("Mostrando Gráficos... (Cerrá la ventana de Matplotlib para terminar el script)")
+    print("Mostrando Gráficos... (Cerrá la ventana de Matplotlib para avanzar)")
 
 
     # ---------------------------------------------------------
@@ -208,8 +208,20 @@ def calcular_metricas_y_graficar(archivo_log, archivo_eventos):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
 
     # Gráfico 1: Caudal Indicado vs Real
-    ax1.step(t_obj, y_obj, where='post', label='Caudal Indicado (Orden)', color='#2ca02c', linewidth=2.5)
-    ax1.step(t_real, y_real, where='post', label='Caudal Real (Sensor)', color='#d62728', linestyle='--', linewidth=2.5)
+    t_obj_inicio = t_obj[:-1]
+    t_obj_fin = t_obj[1:]
+    y_obj_vals = y_obj[:-1]
+
+    t_real_inicio = t_real[:-1]
+    t_real_fin = t_real[1:]
+    y_real_vals = y_real[:-1]
+
+    ax1.hlines(y=y_obj_vals, xmin=t_obj_inicio, xmax=t_obj_fin, label='Caudal Indicado (Orden)', colors='#2ca02c', linewidth=2.5)
+    ax1.plot(t_obj_inicio, y_obj_vals, 'o', color='#2ca02c', markersize=5)
+
+    ax1.hlines(y=y_real_vals, xmin=t_real_inicio, xmax=t_real_fin, label='Caudal Real (Sensor)', colors='#d62728', linestyles='--', linewidth=2.5)
+    ax1.plot(t_real_inicio, y_real_vals, 'o', color='#d62728', markersize=5)
+
     ax1.set_title("Caudal Indicado vs Caudal Real", fontsize=14, fontweight='bold')
     ax1.set_ylabel("Caudal (ml/h)", fontsize=12)
     ax1.legend(loc='upper right')

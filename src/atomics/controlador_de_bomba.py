@@ -86,7 +86,7 @@ class ControladorDeBomba(AtomicDEVS):
                 salida = (self.out_detenerBomba, "emitir")
                 sigma = 0.0
 
-        elif self.in_sensorFlujo in inputs:
+        if self.in_sensorFlujo in inputs:
             x = inputs[self.in_sensorFlujo]
             x = x[0] if isinstance(x, list) else x
             if caudalObj > 0:
@@ -111,13 +111,13 @@ class ControladorDeBomba(AtomicDEVS):
                         salida = (self.out_alarmaCritica, "emitir")
                         sigma = 0.0
 
-        elif self.in_finBolsa in inputs:
+        if self.in_finBolsa in inputs:
             if fase == "ajustando":
                 fase = "fin_bolsa"
                 salida = (self.out_alarmaBaja, "emitir")
                 sigma = 0.0
 
-        elif self.in_confEnf in inputs:
+        if self.in_confEnf in inputs:
             if fase == "bloqueado":
                 fase = "suspendido"
                 caudalObj = 0

@@ -37,6 +37,11 @@ def ejecutar_simulacion(parametros, escenario_ordenes, cronograma_eventos, tiemp
             
     print("\n[INFO] La traza de PyPDEVS en español fue guardada en 'logs_simulacion.txt'.")
     print("[INFO] El historial limpio de eventos se guardó en 'registro_eventos.txt'.")
+    
+    # Importar y ejecutar el graficador/métricas automáticamente
+    from graficar import calcular_metricas_y_graficar
+    calcular_metricas_y_graficar("logs_simulacion.txt", "registro_eventos.txt")
+    
     input("\nPresione ENTER para continuar...")
 
 def menu_parametros(parametros):
@@ -157,32 +162,45 @@ def menu_escenarios_existentes(parametros):
         tiempo_max = 250.0
         
         if op == "1":
-            escenario = [(50, 200)]
-            print("\n[Resumen] Escenario 1: Inicia orden de 50 ml/h constante. No hay ruido ni fallas.")
+            # 6 eventos: Múltiples cambios de caudal exitosos
+            escenario = [(0, 10), (50, 15), (70, 15), (30, 15), (100, 15), (50, 20)]
+            tiempo_max = 90.0
+            print("\n[Resumen] Escenario 1: Cambios constantes (5 eventos de caudal). Funcionamiento perfecto sin alarmas.")
         elif op == "2":
-            escenario = [(50, 100), (80, 100)]
-            print("\n[Resumen] Escenario 2: Inicia en 50 ml/h, y a los 100s cambia a 80 ml/h.")
+            # 5 eventos: Subidas y bajadas
+            escenario = [(0, 10), (50, 15), (80, 20), (40, 15), (120, 20)]
+            tiempo_max = 80.0
+            print("\n[Resumen] Escenario 2: Inicia en 50, sube a 80, baja a 40, sube a 120. Comprobación de agilidad del actuador.")
         elif op == "3":
-            escenario = [(50, 100), (0, 100)]
-            print("\n[Resumen] Escenario 3: Inicia en 50 ml/h, y a los 100s la orden cae a 0 (suspensión).")
+            # 6 eventos: Encendidos y apagados iterativos
+            escenario = [(0, 10), (50, 15), (0, 10), (80, 15), (0, 10), (60, 15)]
+            tiempo_max = 75.0
+            print("\n[Resumen] Escenario 3: La orden cae a 0 múltiples veces, suspendiendo y reanudando la bomba repetidamente.")
         elif op == "4":
-            escenario = [(100, 200)]
+            # 5 eventos: Cambios con ruido leve
+            escenario = [(0, 10), (100, 15), (50, 15), (120, 15), (80, 15)]
             parametros.RUIDO_ACTUADOR = -0.05
-            print("\n[Resumen] Escenario 4: Inyectaremos un error físico del 5% en la bomba. Al ser leve (<10%), no saltarán alarmas.")
+            tiempo_max = 70.0
+            print("\n[Resumen] Escenario 4: 5 cambios de caudal con un error físico del 5%. Al ser menor al 10%, el sistema lo tolera en silencio.")
         elif op == "5":
-            escenario = [(100, 200)]
+            # 4 eventos combinados: 2 órdenes y 2 confirmaciones
+            escenario = [(0, 10), (100, 35), (60, 35)]
+            cronograma = [("conf_enf", 30), ("conf_enf", 40)]
             parametros.RUIDO_ACTUADOR = -0.15
-            print("\n[Resumen] Escenario 5: Error físico grave del 15% en la bomba. Saltará Alarma Media a los 5s, y luego Crítica.")
+            tiempo_max = 150.0
+            print("\n[Resumen] Escenario 5: Error del 15%. La bomba se bloquea, el enfermero confirma, cambiamos la orden, se vuelve a bloquear y confirma de nuevo.")
         elif op == "6":
-            escenario = [(50, 200)]
-            cronograma = [("fin_bolsa", 50), ("conf_enf", 30)]
-            print("\n[Resumen] Escenario 6: A los 50s se acaba la bolsa (Alarma Baja). 30s después el enfermero confirma.")
+            # 5 eventos: Órdenes + Fin de bolsa + Auto detención + Confirmación
+            escenario = [(0, 10), (50, 20), (80, 90), (60, 20)]
+            cronograma = [("fin_bolsa", 40), ("conf_enf", 130)]
+            tiempo_max = 140.0
+            print("\n[Resumen] Escenario 6: Fin de bolsa a los 40s. A los 100s la bomba se bloquea por seguridad. A los 130s confirma enfermero y reanuda a 60ml/h.")
         elif op == "7":
-            escenario = [(100, 200)]
+            # 5 eventos: Cambios frenéticos antes del error crítico
+            escenario = [(0, 10), (50, 5), (80, 5), (100, 5), (60, 70)]
             parametros.RUIDO_ACTUADOR = -0.15
-            tiempo_max = 100.0 # Más corto para ver el bucle rápido
-            # Sin cronograma de confirmación, la alarma crítica iterará por siempre
-            print("\n[Resumen] Escenario 7: Error físico del 15%. La alarma crítica sonará, esperará 30s, y luego repetirá cada 10s porque nadie confirma.")
+            tiempo_max = 95.0
+            print("\n[Resumen] Escenario 7: Error del 15%. Cambios rápidos iniciales, luego falla sostenida. Alarma crítica entra en bucle infinito de 30s + 10s repetitivos.")
         elif op == "8":
             break
         else:
@@ -249,8 +267,10 @@ def main():
         
         if op == "1":
             menu_escenarios_existentes(parametros)
+            calcular_metricas_y_graficar("logs_simulacion.txt", "registro_eventos.txt")
         elif op == "2":
             menu_personalizado(parametros, escenario_ordenes, cronograma_eventos, tiempo_max)
+            calcular_metricas_y_graficar("logs_simulacion.txt", "registro_eventos.txt")
         elif op == "3":
             limpiar_pantalla()
             print("Saliendo del simulador...")
